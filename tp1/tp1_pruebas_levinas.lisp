@@ -42,8 +42,8 @@
 	)
 )
 
-(print (pertenece 8 `(9 7 12 8))) ; --> T
-(print (pertenece 1 `(9 7 12 8))) ; --> nil
+(pertenece 8 `(9 7 12 8)) ; --> T
+(pertenece 1 `(9 7 12 8)) ; --> nil
 
 ;Solo recibe listas de atomos
 ;Devuelve los atomos de l1 que no estan en l2
@@ -54,7 +54,7 @@
 	)
 )
 
-(print (diff `(a b c d e) `(b p o u d e))) ; --> (A C)
+(diff `(a b c d e) `(b p o u d e)) ; --> (A C)
 
 ;Recibe un nodo y un grafo como una lista de listas
 ;Cada sublista contiene un nodo y una sublista con los nodos vecinos
@@ -68,8 +68,8 @@
 	)
 )
 
-(print (vecinos `c grafo)); --> (B D)
-(print (vecinos `e grafo)); --> (D)
+(vecinos `c grafo); --> (B D)
+(vecinos `e grafo); --> (D)
 
 
 ;Recibe un nodo inicio, un nodo final y un grafo que los contiene
@@ -86,19 +86,21 @@
 	)
 )
 
-(print (camino `a `k grafo)) ; --> (A B C D N J K)
+(camino `a `k grafo) ; --> (A B C D N J K)
+(camino `a `a grafo) ; --> (A A)
 
 ;Recibe una lista con dos calles y el diccionario de los nodos
 ;Devuelve el nodo que le corresponde a la interseccion de esas calles
 (defun nodo (calles diccionario)
 	(if (null diccionario) nil
-		(if (and (eq (nth 0 calles) (nth 0 (cadar diccionario))) (eq (nth 1 calles) (nth 1 (cadar diccionario)))) (caar diccionario)
+		(if (and (pertenece (nth 0 calles) (cadar diccionario)) (pertenece (nth 1 calles) (cadar diccionario))) (caar diccionario)
 			(nodo calles (cdr diccionario))
 		)
 	)
 )
 
-(print (nodo `(Defensa Belgrano) diccionario)) ; --> K
+(nodo `(Defensa Belgrano) diccionario) ; --> K
+(nodo `(Belgrano Defensa) diccionario) ; --> K
 
 ;Opuesto al anterior. Recibe un nodo y el diccionario de los nodos.
 ;Devuelve la lista de calles que le corresponde a ese nodo
@@ -110,7 +112,7 @@
 	)
 )
 
-(print (esquina `b diccionario)); --> (PaseoColon Chile)
+(esquina `b diccionario); --> (PaseoColon Chile)
 
 ;Recibe una lista de nodos y un diccionario
 ;Devuelve una lista de listas de las calles que le corresponden al nodo
@@ -118,7 +120,8 @@
 	(mapcar (lambda(nodo) (esquina nodo diccionario)) camino)
 )
 
-(print (esquinas `(a g) diccionario)) ; --> ((PASEOCOLON INDEPENDENCIA) (INDEPENDENCIA DEFENSA)) 
+(esquinas `(a g) diccionario) ; --> ((PASEOCOLON INDEPENDENCIA) (INDEPENDENCIA DEFENSA)) 
+(esquinas `(a) diccionario) ; --> ((PASEOCOLON INDEPENDENCIA)) 
 
 ;Recibe dos listas de esquinas
 ;Devuelve cual es la calle que tienen en comun
@@ -128,26 +131,34 @@
 	)
 )
 
-(print (calle_union `(Defensa Belgrano) `(Defensa Mexico))); --> DEFENSA
+(calle_union `(Defensa Belgrano) `(Defensa Mexico)); --> DEFENSA
 
-;recibe un camino de esquinas (c1 c2) y devuelve cuantas cuadras hay que ir por cada calle
+;recibe un camino de esquinas (c1 c2)
+;devuelve una lista de sublistas con una cuadra y cuadras hay que ir por esa calle 
 (defun recorrido (camino &optional (ant nil) (c 0)  (res nil))
-	(cond ((null ant) (recorrido (cdr camino) (calle_union (nth 0 camino) (nth 1 camino))))
-		((eq (length camino) 1) (reverse (cons (list ant (+ c 1)) res)))
+	(cond
+		((null ant) (recorrido (cdr camino) (calle_union (nth 0 camino) (nth 1 camino))))
+		((<= (length camino) 1) (reverse (cons (list ant (+ c 1)) res)))
 		((eq (calle_union (nth 0 camino) (nth 1 camino)) ant) (recorrido (cdr camino) ant (+ c 1) res)) ; sigo por la misma calle
 		(T (recorrido (cdr camino) (calle_union (nth 0 camino) (nth 1 camino)) 0 (cons (list ant (+ c 1)) res))) ; dobla 
 	)
 )
 
+(recorrido `((PASEOCOLON INDEPENDENCIA))) ; --> ((INDEPENDENCIA 1))
+
 ;Recibe una lista de listas. Cada sublista tiene una calle y la cantidad de cuadras que hay que seguir por esa calle hasta llegar a destino
 ;Imprime por pantalla el recorrido
 (defun imprimir (recorrido &optional sol)
-	(cond ((eq (length recorrido) 1) (reverse (cons (format t "~%Recorrer ~D cuadras por ~S hasta llegar a destino~%"
+	(cond 
+		((and (eq (length recorrido) 1) (null sol)) (format t "~%¡Ya estás en el destino!~%"))
+		((eq (length recorrido) 1) (reverse (cons (format t "~%Recorrer ~D cuadras por ~S hasta llegar a destino~%"
           (cadar recorrido) (caar recorrido)) sol)))
-	(T (imprimir (cdr recorrido) (cons (format t "~%Recorrer ~D cuadras por ~S y doblar en ~S"
+		(T (imprimir (cdr recorrido) (cons (format t "~%Recorrer ~D cuadras por ~S y doblar en ~S"
           (cadar recorrido) (caar recorrido) (car (nth 1 recorrido))) sol)))
 	)
 )
+
+(imprimir `((PASEOCOLON 1))) ; --> "Ya estás en el destino"
 
 ;Recibe una esquina inicio y una esquina final.
 ;Imprime por pantalla las instrucciones para llegar de i a f
@@ -155,11 +166,11 @@
 	(imprimir 
 		(recorrido
 			(esquinas (camino (nodo i diccionario) (nodo f diccionario) grafo) diccionario)
-			nil 0)
 		)
+	)
 )
 
-(print "")
-(print "")
-(print "")
-(print (gps `(PaseoColon Independencia) `(Defensa Belgrano) grafo diccionario))
+(gps `(PaseoColon Independencia) `(Defensa Belgrano) grafo diccionario)
+(gps `(Defensa Belgrano) `(Belgrano Defensa) grafo diccionario)
+
+
