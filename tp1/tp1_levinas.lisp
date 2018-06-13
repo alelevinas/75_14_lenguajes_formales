@@ -67,6 +67,10 @@
 ;Recibe un nodo inicio, un nodo final y un grafo que los contiene
 ;Devuelve el primer camino que encuentra desde el nodo i hasta el nodo f
 (defun camino (i f grafo &optional (tray (list (list i))))
+	(print "--------------------")
+	(print i)
+	(print f)
+	(print tray)
 	(if (null tray) `NO_HAY_CAMINO
 		(if (eq (caar tray) f) (reverse (car tray)) ; Llegamos, devolvemos el camino
 			(camino i f grafo (append (
@@ -77,6 +81,43 @@
 		)
 	)
 )
+
+;Recibe un nodo inicio, un nodo final y un grafo que los contiene
+;Devuelve todos los caminos que encuentra desde el nodo i hasta el nodo f
+(defun caminos (i f grafo &optional (tray (list (list i))) results)
+	;(print "--------------------")
+	;(print i)
+	;(print f)
+	;(print tray)
+	(if (null tray) results ;`NO_HAY_CAMINO
+		(if (eq (caar tray) f) (caminos i f grafo (cdr tray) (cons (reverse (car tray)) results)) ; Llegamos, agrego el camino a la lista de caminos results
+			(caminos i f grafo (append (
+					mapcar (lambda (x) (cons x (car tray))) (diff (vecinos (caar tray) grafo) (car tray)))
+					(cdr tray)
+				) ; Una lista con todos los posibles vecinos no visitados para el primer nodo que hay en el actual recorrido
+				results
+			)
+		)
+	)
+)
+
+
+
+;(print (caminos `a `k grafo)) ; --> (A B C D N J K)
+
+(defun caminos_minimos (caminos &optional minimos)
+	(cond
+		((null caminos) minimos)
+		((null minimos) (caminos_minimos (cdr caminos) (cons (car caminos) minimos)))
+		((< (length (car caminos)) (length (car minimos))) (caminos_minimos (cdr caminos) (list (car caminos))))
+		((= (length (car caminos)) (length (car minimos))) (caminos_minimos (cdr caminos) (cons (car caminos) minimos)))
+		(T (caminos_minimos (cdr caminos) minimos))
+	)
+)
+
+;(print (caminos_minimos (caminos `a `k grafo)))
+
+
 
 ;Recibe una lista con dos calles y el diccionario de los nodos
 ;Devuelve el nodo que le corresponde a la interseccion de esas calles
@@ -123,24 +164,41 @@
 	)
 )
 
+(defun armar_hasta_destino(cuadras calle)
+	(list `RECCORRER cuadras `CUADRAS `POR calle `HASTA `LLEGAR `A `DESTINO)
+)
+
+(defun armar_hasta_doblar(cuadras calle dobla)
+	(list `RECCORRER cuadras `CUADRAS `POR calle `Y `DOBLAR `EN dobla)
+)
+
 ;Recibe una lista de listas. Cada sublista tiene una calle y la cantidad de cuadras que hay que seguir por esa calle hasta llegar a destino
-;Imprime por pantalla el recorrido
-(defun imprimir (recorrido &optional sol)
+;Devuelve una lista con el recorrido en listas
+(defun instrucciones (recorrido &optional sol)
 	(cond 
-		((and (eq (length recorrido) 1) (null sol)) (format t "~%¡Ya estás en el destino!~%"))
-		((eq (length recorrido) 1) (reverse (cons (format t "~%Recorrer ~D cuadras por ~S hasta llegar a destino~%"
-          (cadar recorrido) (caar recorrido)) sol)))
-		(T (imprimir (cdr recorrido) (cons (format t "~%Recorrer ~D cuadras por ~S y doblar en ~S"
-          (cadar recorrido) (caar recorrido) (car (nth 1 recorrido))) sol)))
+		((and (eq (length recorrido) 1) (null sol)) (list `YA `ESTAS `EN `EL `DESTINO))
+		((eq (length recorrido) 1) 
+			(reverse (cons (armar_hasta_destino (cadar recorrido) (caar recorrido)) sol)))
+		(T (instrucciones (cdr recorrido) 
+			(cons (armar_hasta_doblar (cadar recorrido) (caar recorrido) (car (nth 1 recorrido))) sol)))
 	)
 )
 
 ;Recibe una esquina inicio y una esquina final.
 ;Imprime por pantalla las instrucciones para llegar de i a f
 (defun gps (i f grafo diccionario)
-	(imprimir 
-		(recorrido
-			(esquinas (camino (nodo i diccionario) (nodo f diccionario) grafo) diccionario)
+	(mapcar `instrucciones 
+		(mapcar `recorrido
+			(mapcar (lambda (camino) (esquinas camino diccionario)) (caminos_minimos (caminos (nodo i diccionario) (nodo f diccionario) grafo)))
 		)
 	)
 )
+
+(print "-------")
+(print (gps `(PaseoColon Independencia) `(Defensa Belgrano) grafo diccionario))
+
+(print "-------")
+(print (gps `(Defensa Belgrano) `(Belgrano Defensa) grafo diccionario))
+
+(print "-------")
+(print (gps `(Balcarce Chile) `(PaseoColon Belgrano) grafo diccionario))

@@ -86,7 +86,7 @@
 	)
 )
 
-(camino `a `k grafo) ; --> (A B C D N J K)
+(print (camino `a `k grafo)) ; --> (A B C D N J K)
 (camino `a `a grafo) ; --> (A A)
 
 ;Recibe una lista con dos calles y el diccionario de los nodos
@@ -146,6 +146,27 @@
 
 (recorrido `((PASEOCOLON INDEPENDENCIA))) ; --> ((INDEPENDENCIA 1))
 
+
+(defun armar_hasta_destino(cuadras calle)
+	(list `RECCORRER cuadras `CUADRAS `POR calle `HASTA `LLEGAR `A `DESTINO)
+)
+
+(defun armar_hasta_doblar(cuadras calle dobla)
+	(list `RECCORRER cuadras `CUADRAS `POR calle `Y `DOBLAR `EN dobla)
+)
+
+;Recibe una lista de listas. Cada sublista tiene una calle y la cantidad de cuadras que hay que seguir por esa calle hasta llegar a destino
+;Imprime por pantalla el recorrido
+(defun instrucciones (recorrido &optional sol)
+	(cond 
+		((and (eq (length recorrido) 1) (null sol)) (list `YA `ESTAS `EN `EL `DESTINO))
+		((eq (length recorrido) 1) 
+			(reverse (cons (armar_hasta_destino (cadar recorrido) (caar recorrido)) sol)))
+		(T (instrucciones (cdr recorrido) 
+			(cons (armar_hasta_doblar (cadar recorrido) (caar recorrido) (car (nth 1 recorrido))) sol)))
+	)
+)
+
 ;Recibe una lista de listas. Cada sublista tiene una calle y la cantidad de cuadras que hay que seguir por esa calle hasta llegar a destino
 ;Imprime por pantalla el recorrido
 (defun imprimir (recorrido &optional sol)
@@ -163,14 +184,15 @@
 ;Recibe una esquina inicio y una esquina final.
 ;Imprime por pantalla las instrucciones para llegar de i a f
 (defun gps (i f grafo diccionario)
-	(imprimir 
+	;(imprimir 
+	(instrucciones 
 		(recorrido
 			(esquinas (camino (nodo i diccionario) (nodo f diccionario) grafo) diccionario)
 		)
 	)
 )
 
-(gps `(PaseoColon Independencia) `(Defensa Belgrano) grafo diccionario)
-(gps `(Defensa Belgrano) `(Belgrano Defensa) grafo diccionario)
+(print (gps `(PaseoColon Independencia) `(Defensa Belgrano) grafo diccionario))
+(print (gps `(Defensa Belgrano) `(Belgrano Defensa) grafo diccionario))
 
 
