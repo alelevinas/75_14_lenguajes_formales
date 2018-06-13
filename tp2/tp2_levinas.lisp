@@ -34,6 +34,15 @@
 	(append (reduce `append (mapcar `list vars vals)) amb)
 )
 
+;recibe una lista de listas y devuelve los pares 1-1 2-2 3-3, etc.
+(defun emparejar (L)
+	(if (null (car L)) nil
+		(cons (mapcar 'car L) (emparejar (mapcar 'cdr L)))
+	)
+)
+
+(print (emparejar `((1 2 3))))
+
 ;Eval lisp de 1 ambiente
 (defun evaluar (expr amb)
 	(if (atom expr) 
@@ -59,7 +68,8 @@
 					(evaluar (caddr expr) amb)
 					(evaluar (cadddr expr) amb)))
 			((eq (car expr) `MAPCAR)
-				(mapcar (lambda(param) (aplicar (nth 1 expr) (list param) amb)) (evaluar (nth 2 expr) amb)))
+				;(mapcar (lambda(param) (aplicar (nth 1 expr) (list param) amb)) (evaluar (nth 2 expr) amb)))
+				(mapcar (lambda(param) (aplicar (nth 1 expr) param amb)) (emparejar (mapcar (lambda(x) (evaluar x amb)) (cddr expr)))))
 			(T (aplicar (car expr) (mapcar (lambda (x) (evaluar x amb)) (cdr expr)) amb))
 		)
 	)
@@ -73,6 +83,7 @@
 (print (evaluar '(mapcar numberp (quote (4 5 6))) nil)) ; --> (t t t)
 (print (evaluar '(mapcar car (quote ((2 3) (4 5)))) nil)) ; --> (2 4)
 (print (evaluar '(mapcar list (quote((cdr (quote (a b c))) 2 3))) nil)) ; --> (((CDR '(A B C))) (2) (3))
+(print (evaluar `(mapcar list (quote((cdr (quote (a b c))) 2 3)) (quote (m p q)) (quote (x y z))) nil))
 
 ;(print (aplicarenamb `(x) `(3) ())); --> (x 3)
 ;(print (aplicarenamb `(x y) `(3 9) ())); --> (x 3 y 9)
