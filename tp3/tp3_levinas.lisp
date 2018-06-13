@@ -138,6 +138,9 @@
 					(ejec (append (nth 2 (car prg)) prg) entr mem sal)
 					(ejec (cdr prg) entr mem sal))
 			)
+			((eq (caar prg) `DO)
+				(ejec (append (nth 1 (car prg)) (cons (list 'WHILE (nth 3 (car prg)) (nth 1 (car prg))))  (cdr prg)  ))
+			)
 			((pertenece (caar prg) `(++ --))
 				(ejec (cons (reverse (car prg)) (cdr prg)) entr mem sal))
 			((pertenece (nth 1 (car prg)) `(++ -- += -= *= /=))
@@ -153,7 +156,7 @@
 (defun verificar_simbolo (simbolo mem)
 	(cond
 		((listp simbolo) (reduce (lambda(x y) (and x y)) (mapcar (lambda(x)(verificar_simbolo x mem)) simbolo)))
-		((pertenece simbolo `(CIN COUT IF ELSE WHILE = + - * / ++ -- += -= *= /= < > != ==)) T)
+		((pertenece simbolo `(CIN COUT IF ELSE WHILE DO = + - * / ++ -- += -= *= /= < > != ==)) T)
 		((numberp simbolo) T)
 		((stringp simbolo) T)
 		((not (eq (buscar simbolo mem) `ERROR_VARIABLE_NO_DECLARADA)) T)

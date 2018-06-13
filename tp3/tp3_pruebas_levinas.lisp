@@ -163,7 +163,7 @@
 (defun verificar_simbolo (simbolo mem)
 	(cond
 		((listp simbolo) (reduce (lambda(x y) (and x y)) (mapcar (lambda(x)(verificar_simbolo x mem)) simbolo)))
-		((pertenece simbolo `(CIN COUT IF ELSE WHILE = + - * / ++ -- += -= *= /= < > != ==)) T)
+		((pertenece simbolo `(CIN COUT IF ELSE WHILE DO = + - * / ++ -- += -= *= /= < > != ==)) T)
 		((numberp simbolo) T)
 		((stringp simbolo) T)
 		((not (eq (buscar simbolo mem) `ERROR_VARIABLE_NO_DECLARADA)) T)
@@ -210,6 +210,9 @@
 					(ejec (append (nth 2 (car prg)) prg) entr mem sal)
 					(ejec (cdr prg) entr mem sal))
 			)
+			((eq (caar prg) `DO)
+				(ejec (append (nth 1 (car prg)) (cons (list 'WHILE (nth 3 (car prg)) (nth 1 (car prg)))  (cdr prg))) entr mem sal)
+			)			
 			((pertenece (caar prg) `(++ --))
 				(ejec (cons (reverse (car prg)) (cdr prg)) entr mem sal))
 			((pertenece (nth 1 (car prg)) `(++ -- += -= *= /=))
@@ -249,29 +252,29 @@
 )
 
 `(`_________PRUEBAS_RUN_________)
-(RUN `( (int a = 2 b = 3)
+(print (RUN `( (int a = 2 b = 3)
           		(main (
 					(cout a)
 				)
 				)
-			) () )
+			) () ))
  ; --> (2)
-(RUN `( (int z = 2)
+(print (RUN `( (int z = 2)
           (main (
 			(cout b) )
 			)
-			) () )
- ; --> (ERROR_VARIABLE_NO_DECLARADA)
-(RUN `( (int a = 6)
+			) () ))
+ ; --> ERROR_VARIABLE_NO_DECLARADA
+(print (RUN `( (int a = 6)
           (main (
                  (if (a == 2)
                      ( (cout (a + 1)))
 				 )
 				)
 			)
-			) () )
+			) () ))
  ; --> NIL
-(RUN `( (int a = 6)
+(print (RUN `( (int a = 6)
           (main (
                  (if (a == 2)
                      ( (cout (a + 1) ) )
@@ -280,26 +283,26 @@
 				 )
 				)
 			)
-			) () )
+			) () ))
  ; --> (5)
-(RUN `( (int a = 2)
+(print (RUN `( (int a = 2)
           (main (
                  (if (a == 2)
                      ( (cout (a + 1) )
 				) )
 			) )
-        ) () )
+        ) () ))
 ; --> (3)
-(RUN `( (int a = 2 b)
+(print (RUN `( (int a = 2 b)
           (main (
                  (cin b)
                  (a = b + 3)
                  (cout a)
 				)
           )
-  ) `(5) )
+  ) `(5) ))
 ; --> (8)
-(RUN `( (int a = 2 b)
+(print (RUN `( (int a = 2 b)
           (main (
                  (a = (a + 1) * 4)
                  (b -= 5)
@@ -310,10 +313,10 @@
                  (cout b)
 				)
           )
-       ) `(6) )
+       ) `(6) ))
 ; --> (15 6 -5)
 
-(RUN `( (int n fact = 1) 
+(print (RUN `( (int n fact = 1) 
 			(main (
                  (cin n)
                  (if (n < 0 )
@@ -331,10 +334,10 @@
 				)
 			)
 		)
-) `(5))
+) `(5)))
 ; --> (120)
 
-(RUN `( 
+(print (RUN `( 
 	      (int x y p = 10)
           (int r)
           (main ( (x = p + 10)
@@ -360,10 +363,10 @@
                    )
 				)
           )
-) '(700 100))
+) '(700 100)))
 ; --> (121 893 700 193 100)
 
-(RUN '( (int x y p = 10)                              
+(print (RUN '( (int x y p = 10)                              
 				(int r)
 				(main (
 					(x = p + 10)                             
@@ -376,4 +379,40 @@
 					)
 				)
 				)
-) '(1 2 3))
+) '(1 2 3)))
+; --> ERROR_VARIABLE_NO_DECLARADA
+
+(print (RUN `( (int n fact = 1) 
+			(main (
+                 (cin n)
+                 (if (n < 0 )
+                     ( (cout "no existe fact de nro negativo" ) )
+                  else
+					(
+					 (do
+					  (
+					  	(fact = fact * n)
+					    (n -- )
+					  )
+					 	while (n > 1)
+					 )
+					(cout fact )
+				  )
+				)
+			)
+		)
+) `(5)))
+
+(print (RUN `( (int n fact = 1) 
+			(main (
+                (cin n)
+				(do
+				  (
+					(cout n * n)
+					(n ++ )
+				  )
+					 	while (n < 10)
+				)
+			)
+		)
+) `(1)))
