@@ -44,9 +44,6 @@
 		)
 		(cond 
 			((eq (car expr) `QUOTE) (cadr expr))
-				;(if (atom (cadr expr)) (cadr expr)
-				;	(mapcar (lambda(x) (list `QUOTE x)) (cdr expr))
-				;))
 			((eq (car expr) `OR)
 				(if (evaluar (cadr expr) amb) T
 					(evaluar (caddr expr) amb)))
@@ -59,19 +56,19 @@
 					(evaluar (caddr expr) amb)
 					(evaluar (cadddr expr) amb)))
 			((eq (car expr) `MAPCAR)
-				(mapcar (lambda(param) (aplicar (nth 1 expr) (list param) amb)) (evaluar (nth 2 expr) amb)))
+				(mapcar (lambda(x) (evaluar x amb)) (mapcar (lambda(x) (list (nth 1 expr) x)) (nth 2 expr))))
 			(T (aplicar (car expr) (mapcar (lambda (x) (evaluar x amb)) (cdr expr)) amb))
 		)
 	)
 )
 
-;(print (evaluar '((lambda (x) (* x 2)) (quote 2)) nil )) ; --> 4
+(print (evaluar '((lambda (x) (* x 2)) (quote 2)) nil )) ; --> 4
 
-;(print (evaluar '(mapcar (lambda (x) (* x 2)) (quote (2 3 4))) nil)) ; --> (4 6 8)
+(print (evaluar '(mapcar (lambda (x) (* x 2)) (quote (2 3 4))) nil)) ; --> (4 6 8)
 (print (evaluar '(mapcar (lambda (x) (cons x (cdr (quote (3 4 5))))) (quote (1 2 3))) nil)) ; --> ((1 4 5) (2 4 5) (3 4 5))
 (print (evaluar '(mapcar numberp (quote (4))) nil)) ; --> (t)
 (print (evaluar '(mapcar numberp (quote (4 5 6))) nil)) ; --> (t t t)
-(print (evaluar '(mapcar car (quote ((2 3) (4 5)))) nil)) ; --> (2 4)
+(print (evaluar '(mapcar car (quote ((quote(2 3)) (quote(4 5))))) nil)) ; --> (2 4)
 (print (evaluar '(mapcar list (quote((cdr (quote (a b c))) 2 3))) nil)) ; --> (((CDR '(A B C))) (2) (3))
 
 ;(print (aplicarenamb `(x) `(3) ())); --> (x 3)
