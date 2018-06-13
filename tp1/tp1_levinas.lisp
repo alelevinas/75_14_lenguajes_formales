@@ -85,10 +85,6 @@
 ;Recibe un nodo inicio, un nodo final y un grafo que los contiene
 ;Devuelve todos los caminos que encuentra desde el nodo i hasta el nodo f
 (defun caminos (i f grafo &optional (tray (list (list i))) results)
-	;(print "--------------------")
-	;(print i)
-	;(print f)
-	;(print tray)
 	(if (null tray) results ;`NO_HAY_CAMINO
 		(if (eq (caar tray) f) (caminos i f grafo (cdr tray) (cons (reverse (car tray)) results)) ; Llegamos, agrego el camino a la lista de caminos results
 			(caminos i f grafo (append (
@@ -165,7 +161,7 @@
 )
 
 (defun armar_hasta_destino(cuadras calle)
-	(list `RECCORRER cuadras `CUADRAS `POR calle `HASTA `LLEGAR `A `DESTINO)
+	(list `RECCORRER cuadras `CUADRAS `POR calle `HASTA `LLEGAR `A `DESTINO.)
 )
 
 (defun armar_hasta_doblar(cuadras calle dobla)
@@ -178,16 +174,28 @@
 	(cond 
 		((and (eq (length recorrido) 1) (null sol)) (list `YA `ESTAS `EN `EL `DESTINO))
 		((eq (length recorrido) 1) 
-			(reverse (cons (armar_hasta_destino (cadar recorrido) (caar recorrido)) sol)))
+			(reduce `append (reverse (cons (armar_hasta_destino (cadar recorrido) (caar recorrido)) sol))))
 		(T (instrucciones (cdr recorrido) 
 			(cons (armar_hasta_doblar (cadar recorrido) (caar recorrido) (car (nth 1 recorrido))) sol)))
 	)
 )
 
+
+(defun mostrar_multiples_instrucciones (recorridos &optional (i 1))
+	(if (null recorridos) nil
+		(cons (append (list 'INSTRUCCIONES 'PARA 'EL 'CAMINO i `:) (instrucciones (car recorridos))) (mostrar_multiples_instrucciones (cdr recorridos) (+ i 1)))
+	)
+)
+
+(defun mostrar_instrucciones (recorridos)
+	(if (eq (length recorridos) 1) (instrucciones (car recorridos))
+		(mostrar_multiples_instrucciones recorridos))
+)
+
 ;Recibe una esquina inicio y una esquina final.
 ;Imprime por pantalla las instrucciones para llegar de i a f
 (defun gps (i f grafo diccionario)
-	(mapcar `instrucciones 
+	(mostrar_instrucciones
 		(mapcar `recorrido
 			(mapcar (lambda (camino) (esquinas camino diccionario)) (caminos_minimos (caminos (nodo i diccionario) (nodo f diccionario) grafo)))
 		)
