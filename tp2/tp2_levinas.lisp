@@ -41,7 +41,7 @@
 	)
 )
 
-(print (emparejar `((1 2 3))))
+;(print (emparejar `((1 2 3))))
 
 ;Eval lisp de 1 ambiente
 (defun evaluar (expr amb)
@@ -53,9 +53,6 @@
 		)
 		(cond 
 			((eq (car expr) `QUOTE) (cadr expr))
-				;(if (atom (cadr expr)) (cadr expr)
-				;	(mapcar (lambda(x) (list `QUOTE x)) (cdr expr))
-				;))
 			((eq (car expr) `OR)
 				(if (evaluar (cadr expr) amb) T
 					(evaluar (caddr expr) amb)))
@@ -78,12 +75,12 @@
 ;(print (evaluar '((lambda (x) (* x 2)) (quote 2)) nil )) ; --> 4
 
 ;(print (evaluar '(mapcar (lambda (x) (* x 2)) (quote (2 3 4))) nil)) ; --> (4 6 8)
-(print (evaluar '(mapcar (lambda (x) (cons x (cdr (quote (3 4 5))))) (quote (1 2 3))) nil)) ; --> ((1 4 5) (2 4 5) (3 4 5))
-(print (evaluar '(mapcar numberp (quote (4))) nil)) ; --> (t)
-(print (evaluar '(mapcar numberp (quote (4 5 6))) nil)) ; --> (t t t)
-(print (evaluar '(mapcar car (quote ((2 3) (4 5)))) nil)) ; --> (2 4)
-(print (evaluar '(mapcar list (quote((cdr (quote (a b c))) 2 3))) nil)) ; --> (((CDR '(A B C))) (2) (3))
-(print (evaluar `(mapcar list (quote((cdr (quote (a b c))) 2 3)) (quote (m p q)) (quote (x y z))) nil))
+;(print (evaluar '(mapcar (lambda (x) (cons x (cdr (quote (3 4 5))))) (quote (1 2 3))) nil)) ; --> ((1 4 5) (2 4 5) (3 4 5))
+;(print (evaluar '(mapcar numberp (quote (4))) nil)) ; --> (t)
+;(print (evaluar '(mapcar numberp (quote (4 5 6))) nil)) ; --> (t t t)
+;(print (evaluar '(mapcar car (quote ((2 3) (4 5)))) nil)) ; --> (2 4)
+;(print (evaluar '(mapcar list (quote((cdr (quote (a b c))) 2 3))) nil)) ; --> (((CDR '(A B C))) (2) (3))
+;(print (evaluar `(mapcar list (quote((cdr (quote (a b c))) 2 3)) (quote (m p q)) (quote (x y z))) nil))
 
 ;(print (aplicarenamb `(x) `(3) ())); --> (x 3)
 ;(print (aplicarenamb `(x y) `(3 9) ())); --> (x 3 y 9)

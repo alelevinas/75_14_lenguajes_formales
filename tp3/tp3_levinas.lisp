@@ -139,7 +139,7 @@
 					(ejec (cdr prg) entr mem sal))
 			)
 			((eq (caar prg) `DO)
-				(ejec (append (nth 1 (car prg)) (cons (list 'WHILE (nth 3 (car prg)) (nth 1 (car prg))))  (cdr prg)  ))
+				(ejec (append (nth 1 (car prg)) (cons (list 'WHILE (nth 3 (car prg)) (nth 1 (car prg)))  (cdr prg))) entr mem sal)
 			)
 			((pertenece (caar prg) `(++ --))
 				(ejec (cons (reverse (car prg)) (cdr prg)) entr mem sal))
