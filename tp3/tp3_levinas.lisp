@@ -117,8 +117,6 @@
 ;mem: la memoria que indica las variables declaradas y sus valores
 ;sal: el "pipe" de la salida std
 (defun ejec (prg entr mem &optional (sal ()))
-	;(print mem)
-	;(print (car prg))
 	(if (null prg) (reverse sal)
 		(cond
 			((null (car prg)) ; vengo de un if sin else
@@ -151,6 +149,25 @@
 	)
 )
 
+
+(defun verificar_simbolo (simbolo mem)
+	(cond
+		((listp simbolo) (reduce (lambda(x y) (and x y)) (mapcar (lambda(x)(verificar_simbolo x mem)) simbolo)))
+		((pertenece simbolo `(CIN COUT IF ELSE WHILE = + - * / ++ -- += -= *= /= < > != ==)) T)
+		((numberp simbolo) T)
+		((stringp simbolo) T)
+		((not (eq (buscar simbolo mem) `ERROR_VARIABLE_NO_DECLARADA)) T)
+		(T nil)
+	)
+)
+
+(defun verificar_variables (prg mem)
+	(if (null prg) T
+		(and (reduce (lambda(x y) (and x y)) (mapcar (lambda(x)(verificar_simbolo x mem)) (car prg))) (verificar_variables (cdr prg) mem))
+	)
+)
+
+
 ;Crea la memoria del programa segun las variables declaradas
 ;hasta encontrarse con la función main
 (defun run (prg entr &optional (mem ()))
@@ -158,7 +175,9 @@
 		(if (eq (caar prg) `INT)
 			(run (cdr prg) entr (agregarvar (cdar prg) mem))
 			(if (eq (caar prg) `MAIN)
-				(ejec (nth 1 (car prg)) entr mem)
+				(if (verificar_variables (nth 1 (car prg)) mem) (ejec (nth 1 (car prg)) entr mem)
+					'ERROR_VARIABLE_NO_DECLARADA
+				)
 			)
 		)
 	)

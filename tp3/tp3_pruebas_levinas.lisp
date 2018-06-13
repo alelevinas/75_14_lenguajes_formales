@@ -10,7 +10,7 @@
 )
 
 `(`_________PRUEBAS_AGREGARVAR_________)
-(print (agregarvar `(x y) nil)); --> (y 0 x 0)
+(agregarvar `(x y) nil); --> (y 0 x 0)
 (agregarvar `(x = 2 y) nil); --> (y 0 x 2)
 (agregarvar `(x = 2 y) `(z 9)); --> (y 0 x 2 z 9)
 
@@ -159,6 +159,29 @@
 (valor `(2 + x * 4) `(x 3)) ; --> 14
 (valor `(2 > 3 == 9 < 5) `(x 3)) ; --> 1
 
+
+(defun verificar_simbolo (simbolo mem)
+	(cond
+		((listp simbolo) (reduce (lambda(x y) (and x y)) (mapcar (lambda(x)(verificar_simbolo x mem)) simbolo)))
+		((pertenece simbolo `(CIN COUT IF ELSE WHILE = + - * / ++ -- += -= *= /= < > != ==)) T)
+		((numberp simbolo) T)
+		((stringp simbolo) T)
+		((not (eq (buscar simbolo mem) `ERROR_VARIABLE_NO_DECLARADA)) T)
+		(T nil)
+	)
+)
+
+(verificar_simbolo `IF nil)
+(verificar_simbolo `2 nil)
+(verificar_simbolo `a nil)
+(verificar_simbolo `(x == 2) `(x 0))
+
+(defun verificar_variables (prg mem)
+	(if (null prg) T
+		(and (reduce (lambda(x y) (and x y)) (mapcar (lambda(x)(verificar_simbolo x mem)) (car prg))) (verificar_variables (cdr prg) mem))
+	)
+)
+
 ;Recibe prg: las intrucciones del programa
 ;entr: el "pipe" de entrada std
 ;mem: la memoria que indica las variables declaradas y sus valores
@@ -217,7 +240,9 @@
 		(if (eq (caar prg) `INT)
 			(run (cdr prg) entr (agregarvar (cdar prg) mem))
 			(if (eq (caar prg) `MAIN)
-				(ejec (nth 1 (car prg)) entr mem)
+				(if (verificar_variables (nth 1 (car prg)) mem) (ejec (nth 1 (car prg)) entr mem)
+					'ERROR_VARIABLE_NO_DECLARADA
+				)
 			)
 		)
 	)
@@ -337,3 +362,18 @@
           )
 ) '(700 100))
 ; --> (121 893 700 193 100)
+
+(RUN '( (int x y p = 10)                              
+				(int r)
+				(main (
+					(x = p + 10)                             
+					(p ++)
+					(++ x)
+					(x *= p - 4)
+					(if (x > p)(
+						(cout xj + p)
+						)
+					)
+				)
+				)
+) '(1 2 3))
