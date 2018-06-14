@@ -172,7 +172,7 @@
 ;Devuelve una lista con el recorrido en listas
 (defun instrucciones (recorrido &optional sol)
 	(cond 
-		((and (eq (length recorrido) 1) (null sol)) (list `YA `ESTAS `EN `EL `DESTINO))
+		((and (eq (length recorrido) 1) (null sol)) (list `YA `ESTAS `EN `EL `DESTINO.))
 		((eq (length recorrido) 1) 
 			(reduce `append (reverse (cons (armar_hasta_destino (cadar recorrido) (caar recorrido)) sol))))
 		(T (instrucciones (cdr recorrido) 
